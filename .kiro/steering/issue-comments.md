@@ -19,6 +19,16 @@ There are three mandatory moments to comment, using the `gh` CLI (`gh issue comm
    - How it was tested.
    - Anything left out of scope or deferred to a follow-up.
 
+## Keeping SPEC.html in Sync
+
+The story card in SPEC.html §12 must reflect the issue's real status. When an issue is completed, update its card **before closing the issue** (ideally in the same PR as the implementation):
+
+- Flip the card's `data-status="open"` to `data-status="done"`.
+- Swap the status badge `<span class="badge badge-open">Open</span>` for `<span class="badge badge-done">Done</span>`.
+- Move the card into the "DONE stories" group so it sorts and filters correctly.
+
+This keeps the spec, the GitHub Issue, and the code telling the same story.
+
 ## Style
 
 - Be concise and factual — these are progress notes, not essays.
@@ -29,4 +39,5 @@ There are three mandatory moments to comment, using the `gh` CLI (`gh issue comm
 
 - I comment when I start, at each notable milestone, and with a summary before closing.
 - I err on the side of more frequent updates so the issue tells the full story.
+- I update the story card's status in SPEC.html to "Done" before closing the issue.
 - I use `gh issue comment` for all of the above and `gh issue close` only after the summary comment is posted.
