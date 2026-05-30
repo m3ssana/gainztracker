@@ -1,7 +1,7 @@
 // GAINZ Sherpa service worker — offline-first shell with controlled updates
 // (SPEC §6, issue #25). Bump CACHE when you change any shipped file so the
 // update rolls out to clients.
-const CACHE = "gainz-v4";
+const CACHE = "gainz-v5";
 
 // Everything needed to launch the app with no network connection.
 const SHELL = [
