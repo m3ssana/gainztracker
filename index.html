@@ -86,6 +86,16 @@
     #desktop-warning h1 span{color:var(--accent)}
     #desktop-warning p{color:var(--muted);max-width:420px;margin:0;font-size:16px;line-height:1.6}
   }
+
+  /* Update prompt (issue #25): a small bottom banner shown only when a new app
+     version is waiting to activate. Sits above the app but is deliberately a thin
+     banner, not a full overlay, so it never hides the compass. */
+  #update-toast{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom));
+    transform:translateX(-50%);z-index:30;display:flex;align-items:center;gap:12px;
+    background:var(--card);border:1px solid var(--line);border-radius:12px;
+    padding:10px 14px;font-size:14px;box-shadow:0 6px 24px rgba(0,0,0,.5)}
+  #update-btn{appearance:none;border:0;border-radius:8px;background:var(--accent);color:#fff;
+    font:inherit;font-weight:700;padding:8px 14px;cursor:pointer}
 </style>
 </head>
 <body>
@@ -134,6 +144,12 @@
     <h1>GAINZ<span>•</span>SHERPA</h1>
     <p>GAINZ Sherpa uses your phone's compass and GPS to point you at the nearest gym —
        sensors most desktops don't have. Open this page on a mobile device to chase your GAINZ.</p>
+  </div>
+
+  <!-- Update prompt (issue #25): revealed by app.js when a new version is waiting. -->
+  <div id="update-toast" class="hidden" role="alert">
+    <span>New version available.</span>
+    <button id="update-btn">Restart</button>
   </div>
 
   <script type="module" src="app.js"></script>

@@ -2,6 +2,7 @@
 // All the heavy math lives in the pure, unit-tested ./src/geo.js so this file
 // only deals with the things that need a browser: sensors, the DOM, and storage.
 import { nearestGym, bearing, arrowRotation, formatDistance } from "./src/geo.js";
+import { shouldPromptRestart } from "./src/update.js";
 
 // --- DOM references (grabbed once so we are not querying on every frame) -----
 const $ = (id) => document.getElementById(id);
@@ -17,6 +18,8 @@ const els = {
   start: $("start"),
   unitMi: $("unit-mi"),
   unitKm: $("unit-km"),
+  updateToast: $("update-toast"),
+  updateBtn: $("update-btn"),
 };
 
 // --- App state ---------------------------------------------------------------
@@ -196,9 +199,53 @@ els.start.addEventListener("click", async () => {
 setUnit(state.unit); // reflect the saved unit preference on first paint
 renderStreak();
 
-// Register the service worker for offline launch (SPEC §6). Non-blocking.
-if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("sw.js").catch(() => {
-    /* Offline support is a progressive enhancement; ignore failures. */
+// --- Service worker + update-on-launch flow (SPEC §6, issue #25) -------------
+// Register for offline launch, then check for a newer version on every open.
+// Shell/code updates wait in the background and we prompt for a restart; data
+// updates arrive silently because the worker serves data network-first (sw.js).
+// All of this is non-blocking, so it never delays first paint.
+let restarting = false; // guards the post-update reload against loops + first install
+
+// Show the restart banner and wire its button to activate the waiting worker.
+function promptRestart(waitingWorker) {
+  els.updateToast.classList.remove("hidden");
+  els.updateBtn.onclick = () => {
+    restarting = true;
+    // Tell the waiting worker to take over; "controllerchange" then reloads us.
+    waitingWorker.postMessage({ type: "SKIP_WAITING" });
+  };
+}
+
+function watchForUpdates(reg) {
+  // An update may already be sitting in "waiting" from a previous visit.
+  if (reg.waiting && navigator.serviceWorker.controller) promptRestart(reg.waiting);
+
+  // Otherwise, watch for one that installs during this session.
+  reg.addEventListener("updatefound", () => {
+    const newWorker = reg.installing;
+    if (!newWorker) return;
+    newWorker.addEventListener("statechange", () => {
+      if (shouldPromptRestart(!!navigator.serviceWorker.controller, newWorker.state)) {
+        promptRestart(newWorker);
+      }
+    });
   });
+}
+
+if ("serviceWorker" in navigator) {
+  // Reload once the new worker takes control — but only after the user opted in,
+  // so the initial clients.claim() on first install can't trigger a reload loop.
+  navigator.serviceWorker.addEventListener("controllerchange", () => {
+    if (restarting) window.location.reload();
+  });
+
+  navigator.serviceWorker
+    .register("sw.js")
+    .then((reg) => {
+      reg.update(); // check for a newer version as soon as we open
+      watchForUpdates(reg);
+    })
+    .catch(() => {
+      /* Offline support is a progressive enhancement; ignore failures. */
+    });
 }

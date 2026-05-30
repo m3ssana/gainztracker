@@ -1,6 +1,7 @@
-// GAINZ Sherpa service worker — offline-first app shell (SPEC §6).
-// Bump CACHE when you change any shipped file to roll the update out to clients.
-const CACHE = "gainz-v3";
+// GAINZ Sherpa service worker — offline-first shell with controlled updates
+// (SPEC §6, issue #25). Bump CACHE when you change any shipped file so the
+// update rolls out to clients.
+const CACHE = "gainz-v4";
 
 // Everything needed to launch the app with no network connection.
 const SHELL = [
@@ -8,6 +9,7 @@ const SHELL = [
   "index.html",
   "app.js",
   "src/geo.js",
+  "src/update.js",
   "gyms.json",
   "manifest.webmanifest",
   "icons/icon-192.png",
@@ -15,10 +17,11 @@ const SHELL = [
   "icons/apple-touch-icon.png",
 ];
 
-// Pre-cache the shell on install so the first offline launch already has it.
+// Pre-cache the shell on install. We deliberately DO NOT call skipWaiting() here:
+// a new worker stays in "waiting" until the user accepts the restart prompt
+// (issue #25), so we never swap assets out from under a running page.
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(SHELL)));
-  self.skipWaiting(); // activate this version immediately
 });
 
 // Drop caches from older versions so updates actually take effect.
@@ -31,10 +34,38 @@ self.addEventListener("activate", (event) => {
   self.clients.claim();
 });
 
-// Cache-first for instant loads; fall back to the network for anything new.
+// The page posts this when the user accepts the restart prompt. Activating now
+// fires "controllerchange" in the page, which reloads onto the new version.
+self.addEventListener("message", (event) => {
+  if (event.data && event.data.type === "SKIP_WAITING") self.skipWaiting();
+});
+
+// Data (e.g. gyms.json) changes more often than the shell, so serve it
+// network-first: users always see the latest data, with a cached copy as the
+// offline fallback. The static shell stays cache-first for instant loads;
+// shell freshness is handled by the update-and-restart flow above.
+function isDataRequest(url) {
+  return url.pathname.endsWith("gyms.json");
+}
+
 self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") return;
-  event.respondWith(
-    caches.match(event.request).then((cached) => cached || fetch(event.request))
-  );
+  const url = new URL(event.request.url);
+
+  if (isDataRequest(url)) {
+    event.respondWith(
+      fetch(event.request)
+        .then((response) => {
+          // Refresh the cached copy for offline use, then return the fresh one.
+          const copy = response.clone();
+          caches.open(CACHE).then((cache) => cache.put(event.request, copy));
+          return response;
+        })
+        .catch(() => caches.match(event.request))
+    );
+    return;
+  }
+
+  // Shell: cache-first for instant loads; fall back to the network for anything new.
+  event.respondWith(caches.match(event.request).then((cached) => cached || fetch(event.request)));
 });
