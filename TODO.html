@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GAINZ Tracker — TODO</title>
+<style>
+  :root{--bg:#0d0d0f;--card:#16161a;--accent:#ff3b30;--accent2:#ffd60a;--text:#f2f2f4;--muted:#9a9aa2;--line:#2a2a30}
+  *{box-sizing:border-box}
+  body{margin:0;font:16px/1.6 -apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text)}
+  header{padding:40px 24px;text-align:center;background:radial-gradient(circle at 50% 0%,#1f1f26,#0d0d0f)}
+  header h1{margin:0;font-size:34px;letter-spacing:2px;font-weight:800}
+  header h1 span{color:var(--accent)}
+  header p{color:var(--muted);margin:8px 0 0;text-transform:uppercase;letter-spacing:3px;font-size:12px}
+  main{max-width:760px;margin:0 auto;padding:24px}
+  section{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px 24px;margin:20px 0}
+  h2{margin-top:0;font-size:20px;border-left:4px solid var(--accent);padding-left:12px}
+  ul{list-style:none;margin:8px 0 0;padding:0}
+  li{margin:8px 0;padding-left:4px}
+  .done{color:var(--text)}
+  .todo{color:var(--muted)}
+  code{background:#000;color:var(--accent2);padding:2px 6px;border-radius:5px;font-size:13px}
+  footer{text-align:center;color:var(--muted);font-size:13px;padding:30px}
+</style>
+</head>
+<body>
+<header>
+  <h1>GAINZ<span>•</span>TRACKER</h1>
+  <p>Feature TODO · ✅ done · ❌ not implemented</p>
+</header>
+
+<main>
+
+<section>
+  <h2>Completed</h2>
+  <ul>
+    <li class="done">✅ Geolocation tracking (<code>watchPosition</code>)</li>
+    <li class="done">✅ Live compass arrow via <code>DeviceOrientation</code> (iOS permission gesture)</li>
+    <li class="done">✅ Big glanceable distance readout, updating as you move</li>
+    <li class="done">✅ Nearest-gym selection with bearing-aware arrow rotation</li>
+    <li class="done">✅ Haversine great-circle distance math</li>
+    <li class="done">✅ Miles ⇄ kilometers toggle, persisted in <code>localStorage</code></li>
+    <li class="done">✅ Permission gate that explains why location/compass are needed</li>
+    <li class="done">✅ Graceful handling of denied permission / no signal / no gyms</li>
+    <li class="done">✅ Streaks &amp; proximity check-ins (local, consecutive-day)</li>
+    <li class="done">✅ Haptic + visual "closing in" cue</li>
+    <li class="done">✅ Rotating hype phrases</li>
+    <li class="done">✅ Installable PWA (<code>manifest.webmanifest</code>, standalone, icons)</li>
+    <li class="done">✅ iOS meta tags + <code>apple-touch-icon</code></li>
+    <li class="done">✅ Service worker — offline app-shell caching</li>
+    <li class="done">✅ Custom domain + HTTPS on GitHub Pages (<code>gainz.messana.ai</code>)</li>
+    <li class="done">✅ Unit tests for the pure geo core</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Not Yet Implemented</h2>
+  <ul>
+    <li class="todo">❌ Dynamic gym discovery via <b>Google Maps Places API</b> (still uses static <code>gyms.json</code>)</li>
+    <li class="todo">❌ Maps API key setup + HTTP-referrer restriction</li>
+    <li class="todo">❌ Re-query Places when the user moves a meaningful distance</li>
+    <li class="todo">❌ Cache latest Places results in <code>localStorage</code> as the offline fallback</li>
+    <li class="todo">❌ Graceful handling of a failed Places call</li>
+    <li class="todo">❌ iOS splash / startup image (<code>apple-touch-startup-image</code>)</li>
+    <li class="todo">❌ Web Worker for distance computation (keep compass at 60fps)</li>
+  </ul>
+</section>
+
+</main>
+
+<footer>GAINZ Tracker — feature status vs. SPEC.html</footer>
+</body>
+</html>

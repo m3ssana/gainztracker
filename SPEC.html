@@ -42,11 +42,15 @@
   <h2>1. Overview</h2>
   <p><b>GAINZ Tracker</b> is a <b>Progressive Web App (PWA)</b> that uses the
   device's geolocation and compass to point the user toward the nearest public
-  gym and show the distance in their preferred units. It is installable to the
-  iOS home screen from Safari ("Add to Home Screen") and launches
-  <b>full-screen in standalone mode</b>, emulating a native mobile app — no
-  browser chrome, its own icon and splash screen. No accounts, no backend, no
-  servers — it runs entirely on-device and works offline once installed.</p>
+  gym and show the distance in their preferred units. Gyms are discovered
+  <b>dynamically</b> via the <b>Google Maps Places API</b>, queried directly from
+  the device around the user's current position — there is no hard-coded gym list
+  to maintain. It is installable to the iOS home screen from Safari ("Add to
+  Home Screen") and launches <b>full-screen in standalone mode</b>, emulating a
+  native mobile app — no browser chrome, its own icon and splash screen. No
+  accounts and <b>no backend of our own</b>; the installed app shell and the last
+  set of discovered gyms are cached locally, so it still opens and orients even
+  without a connection.</p>
 </section>
 
 <section>
@@ -60,7 +64,8 @@
   <h2>3. Core Features</h2>
   <div class="grid">
     <div class="tile"><b>📍 Geolocation</b><br>Reads current position via the
-      browser Geolocation API and computes distance to each known gym.</div>
+      browser Geolocation API and queries the Google Maps Places API for nearby
+      gyms, then computes the distance to each.</div>
     <div class="tile"><b>🧭 Live Compass</b><br>A large arrow rotates to point
       toward the nearest gym using device heading (DeviceOrientation API).</div>
     <div class="tile"><b>📏 Distance Readout</b><br>Big, glanceable distance to
@@ -74,13 +79,20 @@
   <h2>4. Functional Requirements</h2>
   <ul>
     <li>On launch, request location and compass permissions and explain why.</li>
-    <li>Compute the great-circle distance (Haversine) from the user to each gym.</li>
+    <li>Once a position is known, query the <b>Google Maps Places API</b> (Nearby
+      Search, <code>type=gym</code>) around the user to discover gyms dynamically.</li>
+    <li>Compute the great-circle distance (Haversine) from the user to each
+      discovered gym.</li>
     <li>Select and highlight the <b>nearest</b> gym; rotate the compass arrow to
       its bearing relative to the device's current heading.</li>
     <li>Display distance to the nearest gym in the user-selected unit.</li>
     <li>Settings screen lets the user switch <code>miles</code> ⇄ <code>kilometers</code>.</li>
-    <li>Recompute direction and distance continuously as position/heading change.</li>
-    <li>Gracefully handle denied permissions, no signal, and no nearby gyms.</li>
+    <li>Recompute direction and distance continuously as position/heading change;
+      re-query Places when the user moves a meaningful distance.</li>
+    <li>Cache the latest Places results so a denied/offline lookup falls back to
+      the last-known gyms.</li>
+    <li>Gracefully handle denied permissions, no signal, a failed Places call, and
+      no nearby gyms.</li>
   </ul>
 </section>
 
@@ -98,18 +110,18 @@
 </section>
 
 <section>
-  <h2>6. Technical Design — Local Only PWA</h2>
+  <h2>6. Technical Design — Client-Side PWA</h2>
   <table>
     <tr><th>Concern</th><th>Approach</th></tr>
     <tr><td>App type</td><td>Progressive Web App — static files served over <b>HTTPS</b> (required for geolocation, sensors &amp; install).</td></tr>
     <tr><td>Install / standalone</td><td><code>manifest.webmanifest</code> (<code>display:standalone</code>, icons, theme/background color) + iOS meta tags so Safari "Add to Home Screen" launches it like a native app.</td></tr>
-    <tr><td>Offline</td><td><b>Service worker</b> caches the app shell + <code>gyms.json</code> for offline launch and instant loads.</td></tr>
+    <tr><td>Offline</td><td><b>Service worker</b> caches the app shell for offline launch and instant loads; the most recent Places results are cached in <code>localStorage</code> as an offline fallback.</td></tr>
     <tr><td>iOS specifics</td><td><code>apple-mobile-web-app-capable</code>, <code>apple-mobile-web-app-status-bar-style</code>, <code>apple-touch-icon</code>, and a startup/splash image.</td></tr>
-    <tr><td>Hosting</td><td>GitHub Pages at custom domain <code>gainz.messana.ai</code> (HTTPS auto-provisioned) — still no app backend.</td></tr>
+    <tr><td>Hosting</td><td>GitHub Pages at custom domain <code>gainz.messana.ai</code> (HTTPS auto-provisioned) — still no app backend of our own.</td></tr>
     <tr><td>Location</td><td><code>navigator.geolocation.watchPosition()</code></td></tr>
     <tr><td>Heading</td><td><code>DeviceOrientationEvent</code> (webkitCompassHeading / alpha)</td></tr>
-    <tr><td>Gym data</td><td>Bundled static <code>gyms.json</code> dataset shipped with the app — fully offline. (Optional: client-side OpenStreetMap Overpass query when online, no server of our own.)</td></tr>
-    <tr><td>Settings</td><td><code>localStorage</code> for unit preference, streaks.</td></tr>
+    <tr><td>Gym data</td><td><b>Google Maps Places API</b> (Nearby Search, <code>type=gym</code>) called client-side with the user's coordinates — gyms are discovered dynamically rather than hard-coded. The API key is restricted by HTTP referrer (<code>gainz.messana.ai</code>) and limited to the Places API. Results are cached in <code>localStorage</code> for offline reuse.</td></tr>
+    <tr><td>Settings</td><td><code>localStorage</code> for unit preference, streaks, and cached gym results.</td></tr>
     <tr><td>Distance math</td><td>Haversine formula, client-side.</td></tr>
   </table>
 </section>
@@ -124,7 +136,8 @@
     <li><b>Custom icon &amp; splash screen</b> via <code>apple-touch-icon</code>
       and startup image; <code>theme-color</code> tints the status bar.</li>
     <li><b>Offline-first:</b> after first install the service worker serves the
-      cached shell + gym data, so it opens instantly with no connection.</li>
+      cached shell and the last-known gyms, so it opens and orients instantly even
+      with no connection; a live Places refresh runs when back online.</li>
     <li><b>iOS sensor note:</b> Safari requires a user gesture to call
       <code>DeviceOrientationEvent.requestPermission()</code> — the app prompts
       with a "Enable Compass" tap on first launch.</li>
@@ -133,8 +146,12 @@
 <section>
   <h2>8. Deployment</h2>
   <ul>
-    <li><b>Host:</b> GitHub Pages, serving the static app shell, manifest, service
-      worker, and <code>gyms.json</code> from the repo.</li>
+    <li><b>Host:</b> GitHub Pages, serving the static app shell, manifest, and
+      service worker from the repo. Gym data is fetched live from the Google Maps
+      Places API — no gym list is stored in the repo.</li>
+    <li><b>Maps API key:</b> a Google Maps Platform key with the Places API
+      enabled, restricted to the <code>gainz.messana.ai</code> HTTP referrer so the
+      client-side key cannot be reused on other origins.</li>
     <li><b>Custom domain:</b> <code>gainz.messana.ai</code> via a <code>CNAME</code>
       file in the repo + a DNS <code>CNAME</code> record pointing the subdomain to
       GitHub Pages.</li>
@@ -151,8 +168,12 @@
   <p>Startup is designed to be concurrent rather than sequential so the user sees
   results as fast as possible:</p>
   <ul>
-    <li>Kick off the geolocation watch, the device-orientation listener, and the
-      gym-dataset load <b>in parallel</b> (e.g. <code>Promise.all</code>) on launch.</li>
+    <li>Kick off the geolocation watch and the device-orientation listener
+      <b>in parallel</b> on launch; the compass can start spinning before any gym
+      data exists.</li>
+    <li>The Places nearby-search depends on a position, so it fires the moment the
+      first fix arrives — then runs concurrently with rendering (e.g.
+      <code>Promise.all</code> against the cached fallback).</li>
     <li>Distance computations across all gyms run as a single vectorized pass;
       heavy work can be offloaded to a <b>Web Worker</b> to keep the compass UI
       at 60fps.</li>
@@ -164,10 +185,14 @@
 <section>
   <h2>10. Permissions &amp; Privacy</h2>
   <ul>
-    <li>Location and orientation are used <b>only on-device</b>; nothing is
-      transmitted to any server (no backend exists).</li>
-    <li>All preferences and streak data stay in <code>localStorage</code>.</li>
-    <li>Clear permission prompts with fallback messaging if denied.</li>
+    <li>Orientation/compass data stays <b>on-device</b>. To discover gyms, the
+      user's coordinates are sent to the <b>Google Maps Places API</b> (Google's
+      servers) — that is the only data that leaves the device, and only to fetch
+      nearby gyms. There is still no backend of our own.</li>
+    <li>All preferences, streak data, and cached gym results stay in
+      <code>localStorage</code>.</li>
+    <li>Clear permission prompts with fallback messaging if denied, and a note
+      that gym discovery uses Google Maps.</li>
   </ul>
 </section>
 
@@ -182,6 +207,6 @@
 
 </main>
 
-<footer>GAINZ Tracker — PWA Specification · No backend · Installable on iOS Safari · Runs offline</footer>
+<footer>GAINZ Tracker — PWA Specification · No backend of our own · Installable on iOS Safari · Offline-capable shell</footer>
 </body>
 </html>
