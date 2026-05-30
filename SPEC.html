@@ -5,217 +5,448 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>GAINZ Tracker — Specification</title>
 <style>
-  :root{--bg:#0d0d0f;--card:#16161a;--accent:#ff3b30;--accent2:#ffd60a;--text:#f2f2f4;--muted:#9a9aa2;--line:#2a2a30}
+  /* Light theme, royal-purple accent. --blue is retained ONLY for the MEDIUM
+     severity scale (red/orange/blue) so priority stays readable at a glance. */
+  :root{--bg:#faf9ff;--card:#f6f3fd;--accent:#6d28d9;--accent2:#5b21b6;--text:#1a1a1a;--muted:#666;--line:#e7e0f7;--green:#1a7f37;--orange:#bf5700;--red:#cf222e;--blue:#0550ae}
   *{box-sizing:border-box}
-  body{margin:0;font:16px/1.6 -apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text)}
-  header{padding:48px 24px;text-align:center;background:radial-gradient(circle at 50% 0%,#1f1f26,#0d0d0f)}
-  header h1{margin:0;font-size:42px;letter-spacing:2px;font-weight:800}
-  header h1 span{color:var(--accent)}
-  header p{color:var(--muted);margin:8px 0 0;text-transform:uppercase;letter-spacing:3px;font-size:13px}
-  .badge{display:inline-block;margin-top:16px;padding:4px 12px;border:1px solid var(--accent2);color:var(--accent2);border-radius:999px;font-size:12px;letter-spacing:1px}
-  main{max-width:880px;margin:0 auto;padding:24px}
-  section{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:24px;margin:20px 0}
-  h2{margin-top:0;font-size:22px;border-left:4px solid var(--accent);padding-left:12px}
-  h3{color:var(--accent2);font-size:16px;margin-bottom:6px}
-  ul{margin:8px 0 8px 0;padding-left:20px}
-  li{margin:6px 0}
-  code{background:#000;color:var(--accent2);padding:2px 6px;border-radius:5px;font-size:13px}
-  table{width:100%;border-collapse:collapse;margin-top:8px}
-  th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);font-size:14px}
-  th{color:var(--muted);font-weight:600;text-transform:uppercase;font-size:12px;letter-spacing:1px}
-  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
-  .tile{background:#000;border:1px solid var(--line);border-radius:10px;padding:14px}
-  .tile b{color:var(--accent)}
-  footer{text-align:center;color:var(--muted);font-size:13px;padding:30px}
+  body{margin:0;font:15px/1.7 -apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text)}
+  header{padding:32px 24px;border-bottom:1px solid var(--line)}
+  header h1{margin:0;font-size:28px;font-weight:700}
+  header p{color:var(--muted);margin:4px 0 0;font-size:14px}
+  main{max-width:860px;margin:0 auto;padding:24px 20px}
+  section{border:1px solid var(--line);border-radius:8px;padding:20px 24px;margin:20px 0;background:var(--card)}
+  h2{margin:0 0 12px;font-size:18px;font-weight:700;color:var(--accent)}
+  h3{font-size:15px;font-weight:600;margin:14px 0 6px;color:var(--accent2)}
+  ul{margin:6px 0;padding-left:20px}
+  li{margin:5px 0;font-size:14px}
+  code{background:#f0f0f0;padding:2px 5px;border-radius:3px;font-size:13px}
+  table{width:100%;border-collapse:collapse;margin-top:8px;font-size:14px}
+  th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line)}
+  th{font-weight:600;color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.5px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+  .tile{border:1px solid var(--line);border-radius:6px;padding:12px;font-size:14px}
+  .tile b{display:block;margin-bottom:4px}
+  footer{text-align:center;color:var(--muted);font-size:12px;padding:24px;border-top:1px solid var(--line);margin-top:32px}
+
+  /* Tab navigation */
+  .tab-nav{display:flex;gap:0;border-bottom:2px solid var(--line);margin-bottom:4px}
+  .tab-nav button{appearance:none;border:none;background:transparent;font:inherit;font-size:15px;font-weight:600;padding:12px 24px;cursor:pointer;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .15s}
+  .tab-nav button:hover{color:var(--accent)}
+  .tab-nav button.active{color:var(--accent);border-bottom-color:var(--accent)}
+  .tab-panel{display:none}
+  .tab-panel.active{display:block}
+
+  /* User Stories filters */
+  .filter-group{display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+  .filter-group label{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;min-width:60px}
+  .filter-group button{appearance:none;border:1px solid var(--line);background:#fff;color:var(--muted);font:inherit;font-size:13px;font-weight:500;padding:5px 12px;border-radius:4px;cursor:pointer;transition:all .1s}
+  .filter-group button:hover{border-color:#999}
+  .filter-group button.active{color:#fff;border-color:transparent}
+  .filter-group[data-group="status"] button.active{background:var(--accent)}
+  .filter-group[data-group="severity"] button.active{background:var(--accent)}
+  .filter-group[data-group="severity"] button[data-value="CRITICAL"].active{background:var(--red)}
+  .filter-group[data-group="severity"] button[data-value="HIGH"].active{background:var(--orange)}
+  .filter-group[data-group="severity"] button[data-value="MEDIUM"].active{background:var(--blue)}
+
+  .story{border:1px solid var(--line);border-radius:6px;padding:12px 16px;margin:8px 0;background:#fff}
+  .story.hidden{display:none}
+  .story-header{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .story-title{font-weight:600;font-size:14px}
+  .badge{font-size:11px;font-weight:600;padding:2px 7px;border-radius:3px;text-transform:uppercase;letter-spacing:.5px}
+  .badge-CRITICAL{background:#ffebe9;color:var(--red)}
+  .badge-HIGH{background:#fff4e5;color:var(--orange)}
+  .badge-MEDIUM{background:#ddf4ff;color:var(--blue)}
+  .badge-done{background:#dafbe1;color:var(--green)}
+  .badge-open{background:#f0f0f0;color:#555}
+  .story-desc{color:var(--muted);font-size:13px;margin:6px 0 0}
+  .story-link{font-size:13px;color:var(--accent);text-decoration:none}
+  .story-link:hover{text-decoration:underline}
 </style>
 </head>
 <body>
 <header>
-  <h1>GAINZ<span>•</span>TRACKER</h1>
-  <p>Find your iron. Chase your GAINZ.</p>
-  <div class="badge">PWA SPEC v0.1 · INSTALLABLE ON iOS SAFARI</div>
+  <h1>GAINZ Tracker — Product Specification</h1>
+  <p>PWA v0.1 · Installable on iOS Safari · No backend</p>
 </header>
 
 <main>
 
+<!-- Tab navigation -->
+<div class="tab-nav" role="tablist">
+  <button role="tab" aria-selected="true" aria-controls="tab-spec" class="active" data-tab="tab-spec">Specification</button>
+  <button role="tab" aria-selected="false" aria-controls="tab-stories" data-tab="tab-stories">User Stories</button>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<!-- TAB: Specification (sections 1–11)                                        -->
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<div id="tab-spec" class="tab-panel active" role="tabpanel">
+
 <section>
   <h2>1. Overview</h2>
-  <p><b>GAINZ Tracker</b> is a <b>Progressive Web App (PWA)</b> that uses the
-  device's geolocation and compass to point the user toward the nearest public
-  gym and show the distance in their preferred units. Gyms are discovered
-  <b>dynamically</b> via the <b>Google Maps Places API</b>, queried directly from
-  the device around the user's current position — there is no hard-coded gym list
-  to maintain. It is installable to the iOS home screen from Safari ("Add to
-  Home Screen") and launches <b>full-screen in standalone mode</b>, emulating a
-  native mobile app — no browser chrome, its own icon and splash screen. No
-  accounts and <b>no backend of our own</b>; the installed app shell and the last
-  set of discovered gyms are cached locally, so it still opens and orients even
-  without a connection.</p>
+  <p><b>GAINZ Tracker</b> is a Progressive Web App that uses the device's geolocation and compass to point the user toward the nearest public gym and show the distance in their preferred units. Gyms are discovered dynamically via the Google Maps Places API. Installable to the iOS home screen, launches full-screen in standalone mode. No accounts, no backend — the app shell and last-known gyms are cached locally for offline use.</p>
 </section>
 
 <section>
   <h2>2. Target Audience</h2>
-  <p>Gym-focused users (primarily men chasing "GAINZ") who want the fastest,
-  no-friction way to locate and orient toward the closest public gym while out
-  and about — no map clutter, just a direction and a distance.</p>
+  <p>Gym-focused users who want the fastest, no-friction way to locate and orient toward the closest public gym while out and about — no map clutter, just a direction and a distance.</p>
 </section>
 
 <section>
   <h2>3. Core Features</h2>
   <div class="grid">
-    <div class="tile"><b>📍 Geolocation</b><br>Reads current position via the
-      browser Geolocation API and queries the Google Maps Places API for nearby
-      gyms, then computes the distance to each.</div>
-    <div class="tile"><b>🧭 Live Compass</b><br>A large arrow rotates to point
-      toward the nearest gym using device heading (DeviceOrientation API).</div>
-    <div class="tile"><b>📏 Distance Readout</b><br>Big, glanceable distance to
-      the nearest gym, updating in real time as the user moves.</div>
-    <div class="tile"><b>⚙️ Unit Settings</b><br>Toggle between miles and
-      kilometers; choice is saved locally and persists between sessions.</div>
+    <div class="tile"><b>📍 Geolocation</b>Reads position via the Geolocation API and queries Google Maps Places for nearby gyms.</div>
+    <div class="tile"><b>🧭 Live Compass</b>A large arrow rotates to point toward the nearest gym using device heading.</div>
+    <div class="tile"><b>📏 Distance Readout</b>Big, glanceable distance updating in real time as the user moves.</div>
+    <div class="tile"><b>⚙️ Unit Toggle</b>Switch between miles and kilometers; choice persists between sessions.</div>
   </div>
 </section>
 
 <section>
   <h2>4. Functional Requirements</h2>
   <ul>
-    <li>On launch, request location and compass permissions and explain why.</li>
-    <li>Once a position is known, query the <b>Google Maps Places API</b> (Nearby
-      Search, <code>type=gym</code>) around the user to discover gyms dynamically.</li>
-    <li>Compute the great-circle distance (Haversine) from the user to each
-      discovered gym.</li>
-    <li>Select and highlight the <b>nearest</b> gym; rotate the compass arrow to
-      its bearing relative to the device's current heading.</li>
-    <li>Display distance to the nearest gym in the user-selected unit.</li>
-    <li>Settings screen lets the user switch <code>miles</code> ⇄ <code>kilometers</code>.</li>
-    <li>Recompute direction and distance continuously as position/heading change;
-      re-query Places when the user moves a meaningful distance.</li>
-    <li>Cache the latest Places results so a denied/offline lookup falls back to
-      the last-known gyms.</li>
-    <li>Gracefully handle denied permissions, no signal, a failed Places call, and
-      no nearby gyms.</li>
+    <li>On launch, request location and compass permissions with clear explanation.</li>
+    <li>Query the Google Maps Places API (<code>type=gym</code>) around the user's position.</li>
+    <li>Compute great-circle distance (Haversine) to each discovered gym.</li>
+    <li>Highlight the nearest gym; rotate compass arrow to its bearing relative to device heading.</li>
+    <li>Display distance in user-selected unit (miles or kilometers).</li>
+    <li>Recompute continuously as position/heading change; re-query Places on meaningful movement.</li>
+    <li>Cache latest Places results for offline fallback.</li>
+    <li>Gracefully handle denied permissions, no signal, failed API calls, and no nearby gyms.</li>
   </ul>
 </section>
 
 <section>
-  <h2>5. Engaging UX (Retention)</h2>
+  <h2>5. Engagement &amp; Retention</h2>
   <ul>
-    <li><b>Instant payoff:</b> arrow + distance appear within seconds, no setup.</li>
-    <li><b>Bold, motivational visual identity:</b> dark theme, hype copy,
-      "you're <code>0.3 mi</code> from GAINZ" framing.</li>
-    <li><b>Streaks &amp; check-ins:</b> count gym visits (proximity-detected) and
-      keep a local streak to bring users back.</li>
-    <li><b>Haptic / visual cue</b> when the user is closing in on the gym.</li>
-    <li><b>Personality:</b> rotating hype phrases ("Time to lift", "Don't skip leg day").</li>
+    <li>Instant payoff — arrow + distance appear within seconds, no setup.</li>
+    <li>Bold motivational visual identity (dark theme, hype copy).</li>
+    <li>Streaks &amp; proximity check-ins — count gym visits, keep a local streak.</li>
+    <li>Haptic/visual cue when closing in on the gym.</li>
+    <li>Rotating hype phrases for personality.</li>
   </ul>
 </section>
 
 <section>
-  <h2>6. Technical Design — Client-Side PWA</h2>
+  <h2>6. Technical Design</h2>
   <table>
     <tr><th>Concern</th><th>Approach</th></tr>
-    <tr><td>App type</td><td>Progressive Web App — static files served over <b>HTTPS</b> (required for geolocation, sensors &amp; install).</td></tr>
-    <tr><td>Install / standalone</td><td><code>manifest.webmanifest</code> (<code>display:standalone</code>, icons, theme/background color) + iOS meta tags so Safari "Add to Home Screen" launches it like a native app.</td></tr>
-    <tr><td>Offline</td><td><b>Service worker</b> caches the app shell for offline launch and instant loads; the most recent Places results are cached in <code>localStorage</code> as an offline fallback.</td></tr>
-    <tr><td>iOS specifics</td><td><code>apple-mobile-web-app-capable</code>, <code>apple-mobile-web-app-status-bar-style</code>, <code>apple-touch-icon</code>, and a startup/splash image.</td></tr>
-    <tr><td>Hosting</td><td>GitHub Pages at custom domain <code>gainz.messana.ai</code> (HTTPS auto-provisioned) — still no app backend of our own.</td></tr>
+    <tr><td>App type</td><td>PWA — static files over HTTPS.</td></tr>
+    <tr><td>Install</td><td><code>manifest.webmanifest</code> + iOS meta tags for standalone launch.</td></tr>
+    <tr><td>Offline</td><td>Service worker caches app shell; Places results cached in localStorage.</td></tr>
+    <tr><td>Hosting</td><td>GitHub Pages at <code>gainz.messana.ai</code>.</td></tr>
     <tr><td>Location</td><td><code>navigator.geolocation.watchPosition()</code></td></tr>
-    <tr><td>Heading</td><td><code>DeviceOrientationEvent</code> (webkitCompassHeading / alpha)</td></tr>
-    <tr><td>Gym data</td><td><b>Google Maps Places API</b> (Nearby Search, <code>type=gym</code>) called client-side with the user's coordinates — gyms are discovered dynamically rather than hard-coded. The API key is injected
-      at deploy time from a GitHub Actions secret (never committed), restricted by
-      HTTP referrer (<code>gainz.messana.ai</code>) and limited to the Places API. Results are cached in <code>localStorage</code> for offline reuse.</td></tr>
-    <tr><td>Settings</td><td><code>localStorage</code> for unit preference, streaks, and cached gym results.</td></tr>
-    <tr><td>Distance math</td><td>Haversine formula, client-side.</td></tr>
+    <tr><td>Heading</td><td><code>DeviceOrientationEvent</code> (webkitCompassHeading / alpha).</td></tr>
+    <tr><td>Gym data</td><td>Google Maps Places API, client-side. Key injected at deploy from GitHub Actions secret.</td></tr>
+    <tr><td>Storage</td><td><code>localStorage</code> for unit preference, streaks, cached gyms.</td></tr>
+    <tr><td>Math</td><td>Haversine formula, client-side.</td></tr>
   </table>
 </section>
 
 <section>
   <h2>7. PWA &amp; iOS Behavior</h2>
   <ul>
-    <li><b>Add to Home Screen:</b> in iOS Safari, Share → "Add to Home Screen"
-      installs GAINZ Tracker with its own icon.</li>
-    <li><b>Standalone launch:</b> opens full-screen with no Safari address bar or
-      tabs, matching a native app feel.</li>
-    <li><b>Custom icon &amp; splash screen</b> via <code>apple-touch-icon</code>
-      and startup image; <code>theme-color</code> tints the status bar.</li>
-    <li><b>Offline-first:</b> after first install the service worker serves the
-      cached shell and the last-known gyms, so it opens and orients instantly even
-      with no connection; a live Places refresh runs when back online.</li>
-    <li><b>iOS sensor note:</b> Safari requires a user gesture to call
-      <code>DeviceOrientationEvent.requestPermission()</code> — the app prompts
-      with a "Enable Compass" tap on first launch.</li>
+    <li>Add to Home Screen installs with custom icon, launches standalone.</li>
+    <li>Service worker enables offline-first launch.</li>
+    <li>iOS requires user gesture for compass permission — handled by a tap gate.</li>
   </ul>
+</section>
 
 <section>
   <h2>8. Deployment</h2>
   <ul>
-    <li><b>Host:</b> GitHub Pages, serving the static app shell, manifest, and
-      service worker from the repo. Gym data is fetched live from the Google Maps
-      Places API — no gym list is stored in the repo.</li>
-    <li><b>Maps API key:</b> a Google Maps Platform key with the Places API
-      enabled, restricted to the <code>gainz.messana.ai</code> HTTP referrer so the
-      client-side key cannot be reused on other origins.</li>
-    <li><b>Key storage (no plaintext in repo):</b> the key is held as a
-      <b>GitHub Actions secret</b> (<code>GMAPS_KEY</code>) and never committed. A
-      deploy workflow injects it into a git-ignored <code>config.js</code> at build
-      time, then publishes via the GitHub Actions Pages source. The key stays out
-      of source control and git history; since a client-side key is still visible
-      in the shipped bundle, the referrer/API restrictions and quota cap remain the
-      real abuse protections.</li>
-    <li><b>Custom domain:</b> <code>gainz.messana.ai</code> via a <code>CNAME</code>
-      file in the repo + a DNS <code>CNAME</code> record pointing the subdomain to
-      GitHub Pages.</li>
-    <li><b>HTTPS:</b> "Enforce HTTPS" enabled in Pages settings — GitHub
-      auto-issues the TLS cert, satisfying iOS's requirement for geolocation,
-      motion sensors, and PWA install.</li>
-    <li><b>Releases:</b> push to the published branch; bump the service-worker
-      cache version to roll out updates.</li>
+    <li>GitHub Pages with custom domain (<code>gainz.messana.ai</code>), HTTPS enforced.</li>
+    <li>API key stored as GitHub Actions secret, injected into git-ignored <code>config.js</code> at deploy.</li>
+    <li>Bump service worker cache version on each release.</li>
   </ul>
 </section>
 
 <section>
-  <h2>9. Max Parallelism</h2>
-  <p>Startup is designed to be concurrent rather than sequential so the user sees
-  results as fast as possible:</p>
+  <h2>9. Parallelism</h2>
   <ul>
-    <li>Kick off the geolocation watch and the device-orientation listener
-      <b>in parallel</b> on launch; the compass can start spinning before any gym
-      data exists.</li>
-    <li>The Places nearby-search depends on a position, so it fires the moment the
-      first fix arrives — then runs concurrently with rendering (e.g.
-      <code>Promise.all</code> against the cached fallback).</li>
-    <li>Distance computations across all gyms run as a single vectorized pass;
-      heavy work can be offloaded to a <b>Web Worker</b> to keep the compass UI
-      at 60fps.</li>
-    <li>UI renders progressively — the compass shell shows immediately while data
-      streams in.</li>
+    <li>Geolocation + compass listeners start in parallel on launch.</li>
+    <li>Places query fires on first position fix, concurrent with rendering.</li>
+    <li>Heavy computation can be offloaded to a Web Worker.</li>
   </ul>
 </section>
 
 <section>
-  <h2>10. Permissions &amp; Privacy</h2>
+  <h2>10. Privacy</h2>
   <ul>
-    <li>Orientation/compass data stays <b>on-device</b>. To discover gyms, the
-      user's coordinates are sent to the <b>Google Maps Places API</b> (Google's
-      servers) — that is the only data that leaves the device, and only to fetch
-      nearby gyms. There is still no backend of our own.</li>
-    <li>All preferences, streak data, and cached gym results stay in
-      <code>localStorage</code>.</li>
-    <li>Clear permission prompts with fallback messaging if denied, and a note
-      that gym discovery uses Google Maps.</li>
+    <li>Coordinates sent only to Google Maps Places API. No other data leaves the device.</li>
+    <li>All local data in <code>localStorage</code>. No accounts, no tracking.</li>
   </ul>
 </section>
 
 <section>
-  <h2>11. Out of Scope (Provisional)</h2>
+  <h2>11. Out of Scope</h2>
   <ul>
-    <li>User accounts, social feeds, or cloud sync.</li>
-    <li>Turn-by-turn navigation / routing.</li>
+    <li>User accounts, social feeds, cloud sync.</li>
+    <li>Turn-by-turn navigation.</li>
     <li>Real-time crowd or gym-hours data.</li>
   </ul>
 </section>
 
-</main>
+</div>
 
-<footer>GAINZ Tracker — PWA Specification · No backend of our own · Installable on iOS Safari · Offline-capable shell</footer>
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<!-- TAB: User Stories (section 12)                                            -->
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<div id="tab-stories" class="tab-panel" role="tabpanel">
+
+<section>
+  <h2>12. User Stories</h2>
+  <p>Each story links to a GitHub Issue with full technical details and acceptance criteria.</p>
+
+  <!-- Two independent filter rows: status and severity can be combined -->
+  <div class="filter-group" data-group="status">
+    <label>Status</label>
+    <button class="active" data-value="open">Open</button>
+    <button data-value="done">Done</button>
+    <button data-value="all">All</button>
+  </div>
+  <div class="filter-group" data-group="severity">
+    <label>Severity</label>
+    <button class="active" data-value="all">All</button>
+    <button data-value="CRITICAL">Critical</button>
+    <button data-value="HIGH">High</button>
+    <button data-value="MEDIUM">Medium</button>
+  </div>
+
+  <!-- OPEN stories -->
+  <div class="story" data-status="open" data-severity="CRITICAL">
+    <div class="story-header">
+      <span class="badge badge-CRITICAL">Critical</span>
+      <span class="badge badge-open">Open</span>
+      <span class="story-title">Dynamic gym discovery via Google Maps Places API</span>
+    </div>
+    <p class="story-desc">As a user, I want gyms to be discovered dynamically around my current location instead of from a static list, so I always find the actual nearest gym wherever I am.</p>
+    <a class="story-link" href="https://github.com/m3ssana/gainztracker/issues/11" target="_blank">→ GitHub Issue #11</a>
+  </div>
+
+  <div class="story" data-status="open" data-severity="CRITICAL">
+    <div class="story-header">
+      <span class="badge badge-CRITICAL">Critical</span>
+      <span class="badge badge-open">Open</span>
+      <span class="story-title">Maps API key setup &amp; referrer restriction</span>
+    </div>
+    <p class="story-desc">As a developer, I want the Google Maps API key injected at deploy time and restricted by HTTP referrer so it is never committed and cannot be abused.</p>
+    <a class="story-link" href="https://github.com/m3ssana/gainztracker/issues/12" target="_blank">→ GitHub Issue #12</a>
+  </div>
+
+  <div class="story" data-status="open" data-severity="HIGH">
+    <div class="story-header">
+      <span class="badge badge-HIGH">High</span>
+      <span class="badge badge-open">Open</span>
+      <span class="story-title">Re-query Places on meaningful movement</span>
+    </div>
+    <p class="story-desc">As a user, I want the app to refresh gym results when I move a significant distance so the nearest-gym selection stays accurate.</p>
+    <a class="story-link" href="https://github.com/m3ssana/gainztracker/issues/13" target="_blank">→ GitHub Issue #13</a>
+  </div>
+
+  <div class="story" data-status="open" data-severity="HIGH">
+    <div class="story-header">
+      <span class="badge badge-HIGH">High</span>
+      <span class="badge badge-open">Open</span>
+      <span class="story-title">Cache Places results in localStorage for offline fallback</span>
+    </div>
+    <p class="story-desc">As a user, I want the last set of discovered gyms cached locally so the app still works when I lose connectivity.</p>
+    <a class="story-link" href="https://github.com/m3ssana/gainztracker/issues/14" target="_blank">→ GitHub Issue #14</a>
+  </div>
+
+  <div class="story" data-status="open" data-severity="HIGH">
+    <div class="story-header">
+      <span class="badge badge-HIGH">High</span>
+      <span class="badge badge-open">Open</span>
+      <span class="story-title">Graceful handling of failed Places API calls</span>
+    </div>
+    <p class="story-desc">As a user, I want clear feedback when gym discovery fails and a fallback to cached data so the app doesn't break.</p>
+    <a class="story-link" href="https://github.com/m3ssana/gainztracker/issues/15" target="_blank">→ GitHub Issue #15</a>
+  </div>
+
+  <div class="story" data-status="open" data-severity="MEDIUM">
+    <div class="story-header">
+      <span class="badge badge-MEDIUM">Medium</span>
+      <span class="badge badge-open">Open</span>
+      <span class="story-title">iOS splash / startup image</span>
+    </div>
+    <p class="story-desc">As an iOS user, I want a branded splash screen when launching from the home screen so the app feels polished and native.</p>
+    <a class="story-link" href="https://github.com/m3ssana/gainztracker/issues/16" target="_blank">→ GitHub Issue #16</a>
+  </div>
+
+  <div class="story" data-status="open" data-severity="MEDIUM">
+    <div class="story-header">
+      <span class="badge badge-MEDIUM">Medium</span>
+      <span class="badge badge-open">Open</span>
+      <span class="story-title">Web Worker for distance computation</span>
+    </div>
+    <p class="story-desc">As a user, I want distance calculations offloaded to a Web Worker so the compass stays at 60fps even with many gyms.</p>
+    <a class="story-link" href="https://github.com/m3ssana/gainztracker/issues/17" target="_blank">→ GitHub Issue #17</a>
+  </div>
+
+  <div class="story" data-status="open" data-severity="MEDIUM">
+    <div class="story-header">
+      <span class="badge badge-MEDIUM">Medium</span>
+      <span class="badge badge-open">Open</span>
+      <span class="story-title">Android device support (PWA install, compass, sensors)</span>
+    </div>
+    <p class="story-desc">As an Android user, I want the app to install, show a live compass, and track my location on my device so it is not iOS-exclusive.</p>
+    <a class="story-link" href="https://github.com/m3ssana/gainztracker/issues/18" target="_blank">→ GitHub Issue #18</a>
+  </div>
+
+  <!-- DONE stories (hidden by default since status filter starts on "Open") -->
+  <div class="story hidden" data-status="done" data-severity="CRITICAL">
+    <div class="story-header">
+      <span class="badge badge-CRITICAL">Critical</span>
+      <span class="badge badge-done">Done</span>
+      <span class="story-title">Geolocation tracking &amp; nearest gym selection</span>
+    </div>
+    <p class="story-desc">As a user, I want the app to detect my location and identify the nearest gym so I know where to go without searching manually.</p>
+    <a class="story-link" href="https://github.com/m3ssana/gainztracker/issues/1" target="_blank">→ GitHub Issue #1</a>
+  </div>
+
+  <div class="story hidden" data-status="done" data-severity="CRITICAL">
+    <div class="story-header">
+      <span class="badge badge-CRITICAL">Critical</span>
+      <span class="badge badge-done">Done</span>
+      <span class="story-title">Live compass arrow pointing to nearest gym</span>
+    </div>
+    <p class="story-desc">As a user, I want a compass arrow that rotates in real time to point toward the nearest gym so I can orient myself without opening a map.</p>
+    <a class="story-link" href="https://github.com/m3ssana/gainztracker/issues/2" target="_blank">→ GitHub Issue #2</a>
+  </div>
+
+  <div class="story hidden" data-status="done" data-severity="CRITICAL">
+    <div class="story-header">
+      <span class="badge badge-CRITICAL">Critical</span>
+      <span class="badge badge-done">Done</span>
+      <span class="story-title">Big glanceable distance readout</span>
+    </div>
+    <p class="story-desc">As a user, I want to see the distance to the nearest gym in large text that updates as I move so I can glance at it while walking.</p>
+    <a class="story-link" href="https://github.com/m3ssana/gainztracker/issues/3" target="_blank">→ GitHub Issue #3</a>
+  </div>
+
+  <div class="story hidden" data-status="done" data-severity="HIGH">
+    <div class="story-header">
+      <span class="badge badge-HIGH">High</span>
+      <span class="badge badge-done">Done</span>
+      <span class="story-title">Miles ⇄ kilometers unit toggle</span>
+    </div>
+    <p class="story-desc">As a user, I want to switch between miles and kilometers and have my choice remembered.</p>
+    <a class="story-link" href="https://github.com/m3ssana/gainztracker/issues/4" target="_blank">→ GitHub Issue #4</a>
+  </div>
+
+  <div class="story hidden" data-status="done" data-severity="HIGH">
+    <div class="story-header">
+      <span class="badge badge-HIGH">High</span>
+      <span class="badge badge-done">Done</span>
+      <span class="story-title">Permission gate with clear explanation</span>
+    </div>
+    <p class="story-desc">As a user, I want to understand why the app needs location and compass access before granting it.</p>
+    <a class="story-link" href="https://github.com/m3ssana/gainztracker/issues/5" target="_blank">→ GitHub Issue #5</a>
+  </div>
+
+  <div class="story hidden" data-status="done" data-severity="HIGH">
+    <div class="story-header">
+      <span class="badge badge-HIGH">High</span>
+      <span class="badge badge-done">Done</span>
+      <span class="story-title">Installable PWA with standalone launch</span>
+    </div>
+    <p class="story-desc">As a user, I want to install the app to my home screen and have it launch full-screen like a native app.</p>
+    <a class="story-link" href="https://github.com/m3ssana/gainztracker/issues/6" target="_blank">→ GitHub Issue #6</a>
+  </div>
+
+  <div class="story hidden" data-status="done" data-severity="HIGH">
+    <div class="story-header">
+      <span class="badge badge-HIGH">High</span>
+      <span class="badge badge-done">Done</span>
+      <span class="story-title">Service worker for offline app shell</span>
+    </div>
+    <p class="story-desc">As a user, I want the app to open instantly even without a network connection.</p>
+    <a class="story-link" href="https://github.com/m3ssana/gainztracker/issues/7" target="_blank">→ GitHub Issue #7</a>
+  </div>
+
+  <div class="story hidden" data-status="done" data-severity="MEDIUM">
+    <div class="story-header">
+      <span class="badge badge-MEDIUM">Medium</span>
+      <span class="badge badge-done">Done</span>
+      <span class="story-title">Streaks &amp; proximity check-ins</span>
+    </div>
+    <p class="story-desc">As a user, I want the app to detect when I arrive at a gym and track my visit streak.</p>
+    <a class="story-link" href="https://github.com/m3ssana/gainztracker/issues/8" target="_blank">→ GitHub Issue #8</a>
+  </div>
+
+  <div class="story hidden" data-status="done" data-severity="MEDIUM">
+    <div class="story-header">
+      <span class="badge badge-MEDIUM">Medium</span>
+      <span class="badge badge-done">Done</span>
+      <span class="story-title">Haptic &amp; visual "closing in" cue</span>
+    </div>
+    <p class="story-desc">As a user, I want a pulse animation and vibration when I'm close to the gym.</p>
+    <a class="story-link" href="https://github.com/m3ssana/gainztracker/issues/9" target="_blank">→ GitHub Issue #9</a>
+  </div>
+
+  <div class="story hidden" data-status="done" data-severity="MEDIUM">
+    <div class="story-header">
+      <span class="badge badge-MEDIUM">Medium</span>
+      <span class="badge badge-done">Done</span>
+      <span class="story-title">Rotating hype phrases</span>
+    </div>
+    <p class="story-desc">As a user, I want motivational phrases cycling on screen to keep the experience fun.</p>
+    <a class="story-link" href="https://github.com/m3ssana/gainztracker/issues/10" target="_blank">→ GitHub Issue #10</a>
+  </div>
+
+</section>
+
+</div>
+
+</main>
+<footer>GAINZ Tracker — Product Specification</footer>
+
+<script>
+// Tab switching logic.
+(function() {
+  const buttons = document.querySelectorAll('.tab-nav button');
+  const panels = document.querySelectorAll('.tab-panel');
+
+  buttons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      buttons.forEach(b => { b.classList.remove('active'); b.setAttribute('aria-selected', 'false'); });
+      panels.forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      btn.setAttribute('aria-selected', 'true');
+      document.getElementById(btn.dataset.tab).classList.add('active');
+    });
+  });
+})();
+
+// Independent dual-axis filtering: status × severity.
+// Both filters apply simultaneously (AND logic). Default: status=open, severity=all.
+(function() {
+  const stories = document.querySelectorAll('.story');
+  const groups = document.querySelectorAll('.filter-group');
+
+  const active = { status: 'open', severity: 'all' };
+
+  function applyFilters() {
+    stories.forEach(story => {
+      const matchStatus = active.status === 'all' || story.dataset.status === active.status;
+      const matchSeverity = active.severity === 'all' || story.dataset.severity === active.severity;
+      story.classList.toggle('hidden', !(matchStatus && matchSeverity));
+    });
+  }
+
+  groups.forEach(group => {
+    const groupName = group.dataset.group;
+    group.querySelectorAll('button').forEach(btn => {
+      btn.addEventListener('click', () => {
+        group.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        active[groupName] = btn.dataset.value;
+        applyFilters();
+      });
+    });
+  });
+})();
+</script>
 </body>
 </html>

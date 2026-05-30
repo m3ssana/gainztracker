@@ -14,6 +14,7 @@ All infrastructure changes must be deployed using **Google Cloud Deployment Mana
 
 - Infrastructure is defined in Deployment Manager YAML/Jinja/Python templates committed to the repo.
 - No ad-hoc `gcloud` commands that create, modify, or delete resources.
+- **All Deployment Manager templates must be applied through GitHub Actions workflows** — never manually from a local terminal. This ensures every infra change is traceable, repeatable, and tied to a commit.
 - If Deployment Manager cannot express a resource, a human makes the change manually in the GCP Console — never via a CLI write command.
 
 ## GCP CLI Usage
