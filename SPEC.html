@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GAINZ Tracker — Specification</title>
+<title>GAINZ Sherpa — Specification</title>
 <style>
   /* Light theme, royal-purple accent. --blue is retained ONLY for the MEDIUM
      severity scale (red/orange/blue) so priority stays readable at a glance. */
@@ -65,7 +65,7 @@
 </head>
 <body>
 <header>
-  <h1>GAINZ Tracker — Product Specification</h1>
+  <h1>GAINZ Sherpa — Product Specification</h1>
   <p>PWA v0.1 · Installable on iOS Safari · No backend</p>
 </header>
 
@@ -84,7 +84,7 @@
 
 <section>
   <h2>1. Overview</h2>
-  <p><b>GAINZ Tracker</b> is a Progressive Web App that uses the device's geolocation and compass to point the user toward the nearest public gym and show the distance in their preferred units. Gyms are discovered dynamically via the Google Maps Places API. Installable to the iOS home screen, launches full-screen in standalone mode. No accounts, no backend — the app shell and last-known gyms are cached locally for offline use.</p>
+  <p><b>GAINZ Sherpa</b> is a Progressive Web App that uses the device's geolocation and compass to point the user toward the nearest public gym and show the distance in their preferred units. Gyms are discovered dynamically via the Google Maps Places API. Installable to the iOS home screen, launches full-screen in standalone mode. No accounts, no backend — the app shell and last-known gyms are cached locally for offline use.</p>
 </section>
 
 <section>
@@ -214,16 +214,6 @@
   </div>
 
   <!-- OPEN stories -->
-  <div class="story" data-status="open" data-severity="MEDIUM">
-    <div class="story-header">
-      <span class="badge badge-MEDIUM">Medium</span>
-      <span class="badge badge-open">Open</span>
-      <span class="story-title">Rebrand: GAINZ Tracker → GAINZ Sherpa</span>
-    </div>
-    <p class="story-desc">As the product owner, I want the app rebranded from "GAINZ Tracker" to "GAINZ Sherpa" across all documentation, steering files, agent configs, and code so the product presents one consistent identity.</p>
-    <a class="story-link" href="https://github.com/m3ssana/gainztracker/issues/22" target="_blank">→ GitHub Issue #22</a>
-  </div>
-
   <div class="story" data-status="open" data-severity="CRITICAL">
     <div class="story-header">
       <span class="badge badge-CRITICAL">Critical</span>
@@ -305,6 +295,15 @@
   </div>
 
   <!-- DONE stories (hidden by default since status filter starts on "Open") -->
+  <div class="story hidden" data-status="done" data-severity="MEDIUM">
+    <div class="story-header">
+      <span class="badge badge-MEDIUM">Medium</span>
+      <span class="badge badge-done">Done</span>
+      <span class="story-title">Rebrand: GAINZ Tracker → GAINZ Sherpa</span>
+    </div>
+    <p class="story-desc">As the product owner, I want the app rebranded from "GAINZ Tracker" to "GAINZ Sherpa" across all documentation, steering files, agent configs, and code so the product presents one consistent identity.</p>
+    <a class="story-link" href="https://github.com/m3ssana/gainztracker/issues/22" target="_blank">→ GitHub Issue #22</a>
+  </div>
   <div class="story hidden" data-status="done" data-severity="MEDIUM">
     <div class="story-header">
       <span class="badge badge-MEDIUM">Medium</span>
@@ -419,7 +418,7 @@
 </div>
 
 </main>
-<footer>GAINZ Tracker — Product Specification</footer>
+<footer>GAINZ Sherpa — Product Specification</footer>
 
 <script>
 // Tab switching logic.

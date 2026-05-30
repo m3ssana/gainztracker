@@ -24,7 +24,7 @@ Every PR description must include:
 
 PR descriptions should be informative AND entertaining. Life is too short for dry changelogs. Acceptable approaches include:
 
-- Gym puns (strongly encouraged — this is GAINZ Tracker after all)
+- Gym puns (strongly encouraged — this is GAINZ Sherpa after all)
 - Self-deprecating commentary about the bug you introduced and then fixed
 - Dramatic narration of the problem you solved ("The arrow pointed south. The gym was north. Users wandered into the ocean.")
 - Emoji usage that would make a Slack power-user proud
