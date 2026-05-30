@@ -1,0 +1,10 @@
+{
+  "name": "gainztracker",
+  "version": "0.1.0",
+  "description": "GAINZ Tracker — a PWA that points you to the nearest gym.",
+  "type": "module",
+  "scripts": {
+    "test": "node --test"
+  },
+  "license": "MIT"
+}

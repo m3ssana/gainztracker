@@ -1,0 +1,22 @@
+[
+  { "name": "Iron Temple — Manhattan", "lat": 40.7549, "lon": -73.984 },
+  { "name": "Brooklyn Barbell Club", "lat": 40.6782, "lon": -73.9442 },
+  { "name": "Liberty Strength — Jersey City", "lat": 40.7178, "lon": -74.0431 },
+  { "name": "Capitol Gains — Washington DC", "lat": 38.9072, "lon": -77.0369 },
+  { "name": "Beantown Lifts — Boston", "lat": 42.3601, "lon": -71.0589 },
+  { "name": "Steel City Strength — Pittsburgh", "lat": 40.4406, "lon": -79.9959 },
+  { "name": "Windy City Iron — Chicago", "lat": 41.8781, "lon": -87.6298 },
+  { "name": "Motor City Muscle — Detroit", "lat": 42.3314, "lon": -83.0458 },
+  { "name": "Mile High Gains — Denver", "lat": 39.7392, "lon": -104.9903 },
+  { "name": "Lone Star Lifts — Austin", "lat": 30.2672, "lon": -97.7431 },
+  { "name": "Bayou Barbell — Houston", "lat": 29.7604, "lon": -95.3698 },
+  { "name": "Sunshine Strength — Miami", "lat": 25.7617, "lon": -80.1918 },
+  { "name": "Peach State Power — Atlanta", "lat": 33.749, "lon": -84.388 },
+  { "name": "Gold Coast Gym — Los Angeles", "lat": 34.0522, "lon": -118.2437 },
+  { "name": "Bay Area Barbell — San Francisco", "lat": 37.7749, "lon": -122.4194 },
+  { "name": "Emerald Iron — Seattle", "lat": 47.6062, "lon": -122.3321 },
+  { "name": "Rose City Reps — Portland", "lat": 45.5152, "lon": -122.6784 },
+  { "name": "Desert Forge — Phoenix", "lat": 33.4484, "lon": -112.074 },
+  { "name": "Sin City Strength — Las Vegas", "lat": 36.1699, "lon": -115.1398 },
+  { "name": "Twin Cities Iron — Minneapolis", "lat": 44.9778, "lon": -93.265 }
+]

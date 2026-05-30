@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GAINZ Tracker — Specification</title>
+<style>
+  :root{--bg:#0d0d0f;--card:#16161a;--accent:#ff3b30;--accent2:#ffd60a;--text:#f2f2f4;--muted:#9a9aa2;--line:#2a2a30}
+  *{box-sizing:border-box}
+  body{margin:0;font:16px/1.6 -apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text)}
+  header{padding:48px 24px;text-align:center;background:radial-gradient(circle at 50% 0%,#1f1f26,#0d0d0f)}
+  header h1{margin:0;font-size:42px;letter-spacing:2px;font-weight:800}
+  header h1 span{color:var(--accent)}
+  header p{color:var(--muted);margin:8px 0 0;text-transform:uppercase;letter-spacing:3px;font-size:13px}
+  .badge{display:inline-block;margin-top:16px;padding:4px 12px;border:1px solid var(--accent2);color:var(--accent2);border-radius:999px;font-size:12px;letter-spacing:1px}
+  main{max-width:880px;margin:0 auto;padding:24px}
+  section{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:24px;margin:20px 0}
+  h2{margin-top:0;font-size:22px;border-left:4px solid var(--accent);padding-left:12px}
+  h3{color:var(--accent2);font-size:16px;margin-bottom:6px}
+  ul{margin:8px 0 8px 0;padding-left:20px}
+  li{margin:6px 0}
+  code{background:#000;color:var(--accent2);padding:2px 6px;border-radius:5px;font-size:13px}
+  table{width:100%;border-collapse:collapse;margin-top:8px}
+  th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);font-size:14px}
+  th{color:var(--muted);font-weight:600;text-transform:uppercase;font-size:12px;letter-spacing:1px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+  .tile{background:#000;border:1px solid var(--line);border-radius:10px;padding:14px}
+  .tile b{color:var(--accent)}
+  footer{text-align:center;color:var(--muted);font-size:13px;padding:30px}
+</style>
+</head>
+<body>
+<header>
+  <h1>GAINZ<span>•</span>TRACKER</h1>
+  <p>Find your iron. Chase your GAINZ.</p>
+  <div class="badge">PWA SPEC v0.1 · INSTALLABLE ON iOS SAFARI</div>
+</header>
+
+<main>
+
+<section>
+  <h2>1. Overview</h2>
+  <p><b>GAINZ Tracker</b> is a <b>Progressive Web App (PWA)</b> that uses the
+  device's geolocation and compass to point the user toward the nearest public
+  gym and show the distance in their preferred units. It is installable to the
+  iOS home screen from Safari ("Add to Home Screen") and launches
+  <b>full-screen in standalone mode</b>, emulating a native mobile app — no
+  browser chrome, its own icon and splash screen. No accounts, no backend, no
+  servers — it runs entirely on-device and works offline once installed.</p>
+</section>
+
+<section>
+  <h2>2. Target Audience</h2>
+  <p>Gym-focused users (primarily men chasing "GAINZ") who want the fastest,
+  no-friction way to locate and orient toward the closest public gym while out
+  and about — no map clutter, just a direction and a distance.</p>
+</section>
+
+<section>
+  <h2>3. Core Features</h2>
+  <div class="grid">
+    <div class="tile"><b>📍 Geolocation</b><br>Reads current position via the
+      browser Geolocation API and computes distance to each known gym.</div>
+    <div class="tile"><b>🧭 Live Compass</b><br>A large arrow rotates to point
+      toward the nearest gym using device heading (DeviceOrientation API).</div>
+    <div class="tile"><b>📏 Distance Readout</b><br>Big, glanceable distance to
+      the nearest gym, updating in real time as the user moves.</div>
+    <div class="tile"><b>⚙️ Unit Settings</b><br>Toggle between miles and
+      kilometers; choice is saved locally and persists between sessions.</div>
+  </div>
+</section>
+
+<section>
+  <h2>4. Functional Requirements</h2>
+  <ul>
+    <li>On launch, request location and compass permissions and explain why.</li>
+    <li>Compute the great-circle distance (Haversine) from the user to each gym.</li>
+    <li>Select and highlight the <b>nearest</b> gym; rotate the compass arrow to
+      its bearing relative to the device's current heading.</li>
+    <li>Display distance to the nearest gym in the user-selected unit.</li>
+    <li>Settings screen lets the user switch <code>miles</code> ⇄ <code>kilometers</code>.</li>
+    <li>Recompute direction and distance continuously as position/heading change.</li>
+    <li>Gracefully handle denied permissions, no signal, and no nearby gyms.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>5. Engaging UX (Retention)</h2>
+  <ul>
+    <li><b>Instant payoff:</b> arrow + distance appear within seconds, no setup.</li>
+    <li><b>Bold, motivational visual identity:</b> dark theme, hype copy,
+      "you're <code>0.3 mi</code> from GAINZ" framing.</li>
+    <li><b>Streaks &amp; check-ins:</b> count gym visits (proximity-detected) and
+      keep a local streak to bring users back.</li>
+    <li><b>Haptic / visual cue</b> when the user is closing in on the gym.</li>
+    <li><b>Personality:</b> rotating hype phrases ("Time to lift", "Don't skip leg day").</li>
+  </ul>
+</section>
+
+<section>
+  <h2>6. Technical Design — Local Only PWA</h2>
+  <table>
+    <tr><th>Concern</th><th>Approach</th></tr>
+    <tr><td>App type</td><td>Progressive Web App — static files served over <b>HTTPS</b> (required for geolocation, sensors &amp; install).</td></tr>
+    <tr><td>Install / standalone</td><td><code>manifest.webmanifest</code> (<code>display:standalone</code>, icons, theme/background color) + iOS meta tags so Safari "Add to Home Screen" launches it like a native app.</td></tr>
+    <tr><td>Offline</td><td><b>Service worker</b> caches the app shell + <code>gyms.json</code> for offline launch and instant loads.</td></tr>
+    <tr><td>iOS specifics</td><td><code>apple-mobile-web-app-capable</code>, <code>apple-mobile-web-app-status-bar-style</code>, <code>apple-touch-icon</code>, and a startup/splash image.</td></tr>
+    <tr><td>Hosting</td><td>GitHub Pages at custom domain <code>gainz.messana.ai</code> (HTTPS auto-provisioned) — still no app backend.</td></tr>
+    <tr><td>Location</td><td><code>navigator.geolocation.watchPosition()</code></td></tr>
+    <tr><td>Heading</td><td><code>DeviceOrientationEvent</code> (webkitCompassHeading / alpha)</td></tr>
+    <tr><td>Gym data</td><td>Bundled static <code>gyms.json</code> dataset shipped with the app — fully offline. (Optional: client-side OpenStreetMap Overpass query when online, no server of our own.)</td></tr>
+    <tr><td>Settings</td><td><code>localStorage</code> for unit preference, streaks.</td></tr>
+    <tr><td>Distance math</td><td>Haversine formula, client-side.</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>7. PWA &amp; iOS Behavior</h2>
+  <ul>
+    <li><b>Add to Home Screen:</b> in iOS Safari, Share → "Add to Home Screen"
+      installs GAINZ Tracker with its own icon.</li>
+    <li><b>Standalone launch:</b> opens full-screen with no Safari address bar or
+      tabs, matching a native app feel.</li>
+    <li><b>Custom icon &amp; splash screen</b> via <code>apple-touch-icon</code>
+      and startup image; <code>theme-color</code> tints the status bar.</li>
+    <li><b>Offline-first:</b> after first install the service worker serves the
+      cached shell + gym data, so it opens instantly with no connection.</li>
+    <li><b>iOS sensor note:</b> Safari requires a user gesture to call
+      <code>DeviceOrientationEvent.requestPermission()</code> — the app prompts
+      with a "Enable Compass" tap on first launch.</li>
+  </ul>
+
+<section>
+  <h2>8. Deployment</h2>
+  <ul>
+    <li><b>Host:</b> GitHub Pages, serving the static app shell, manifest, service
+      worker, and <code>gyms.json</code> from the repo.</li>
+    <li><b>Custom domain:</b> <code>gainz.messana.ai</code> via a <code>CNAME</code>
+      file in the repo + a DNS <code>CNAME</code> record pointing the subdomain to
+      GitHub Pages.</li>
+    <li><b>HTTPS:</b> "Enforce HTTPS" enabled in Pages settings — GitHub
+      auto-issues the TLS cert, satisfying iOS's requirement for geolocation,
+      motion sensors, and PWA install.</li>
+    <li><b>Releases:</b> push to the published branch; bump the service-worker
+      cache version to roll out updates.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>9. Max Parallelism</h2>
+  <p>Startup is designed to be concurrent rather than sequential so the user sees
+  results as fast as possible:</p>
+  <ul>
+    <li>Kick off the geolocation watch, the device-orientation listener, and the
+      gym-dataset load <b>in parallel</b> (e.g. <code>Promise.all</code>) on launch.</li>
+    <li>Distance computations across all gyms run as a single vectorized pass;
+      heavy work can be offloaded to a <b>Web Worker</b> to keep the compass UI
+      at 60fps.</li>
+    <li>UI renders progressively — the compass shell shows immediately while data
+      streams in.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>10. Permissions &amp; Privacy</h2>
+  <ul>
+    <li>Location and orientation are used <b>only on-device</b>; nothing is
+      transmitted to any server (no backend exists).</li>
+    <li>All preferences and streak data stay in <code>localStorage</code>.</li>
+    <li>Clear permission prompts with fallback messaging if denied.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>11. Out of Scope (Provisional)</h2>
+  <ul>
+    <li>User accounts, social feeds, or cloud sync.</li>
+    <li>Turn-by-turn navigation / routing.</li>
+    <li>Real-time crowd or gym-hours data.</li>
+  </ul>
+</section>
+
+</main>
+
+<footer>GAINZ Tracker — PWA Specification · No backend · Installable on iOS Safari · Runs offline</footer>
+</body>
+</html>
