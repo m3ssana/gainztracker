@@ -120,7 +120,9 @@
     <tr><td>Hosting</td><td>GitHub Pages at custom domain <code>gainz.messana.ai</code> (HTTPS auto-provisioned) — still no app backend of our own.</td></tr>
     <tr><td>Location</td><td><code>navigator.geolocation.watchPosition()</code></td></tr>
     <tr><td>Heading</td><td><code>DeviceOrientationEvent</code> (webkitCompassHeading / alpha)</td></tr>
-    <tr><td>Gym data</td><td><b>Google Maps Places API</b> (Nearby Search, <code>type=gym</code>) called client-side with the user's coordinates — gyms are discovered dynamically rather than hard-coded. The API key is restricted by HTTP referrer (<code>gainz.messana.ai</code>) and limited to the Places API. Results are cached in <code>localStorage</code> for offline reuse.</td></tr>
+    <tr><td>Gym data</td><td><b>Google Maps Places API</b> (Nearby Search, <code>type=gym</code>) called client-side with the user's coordinates — gyms are discovered dynamically rather than hard-coded. The API key is injected
+      at deploy time from a GitHub Actions secret (never committed), restricted by
+      HTTP referrer (<code>gainz.messana.ai</code>) and limited to the Places API. Results are cached in <code>localStorage</code> for offline reuse.</td></tr>
     <tr><td>Settings</td><td><code>localStorage</code> for unit preference, streaks, and cached gym results.</td></tr>
     <tr><td>Distance math</td><td>Haversine formula, client-side.</td></tr>
   </table>
@@ -152,6 +154,13 @@
     <li><b>Maps API key:</b> a Google Maps Platform key with the Places API
       enabled, restricted to the <code>gainz.messana.ai</code> HTTP referrer so the
       client-side key cannot be reused on other origins.</li>
+    <li><b>Key storage (no plaintext in repo):</b> the key is held as a
+      <b>GitHub Actions secret</b> (<code>GMAPS_KEY</code>) and never committed. A
+      deploy workflow injects it into a git-ignored <code>config.js</code> at build
+      time, then publishes via the GitHub Actions Pages source. The key stays out
+      of source control and git history; since a client-side key is still visible
+      in the shipped bundle, the referrer/API restrictions and quota cap remain the
+      real abuse protections.</li>
     <li><b>Custom domain:</b> <code>gainz.messana.ai</code> via a <code>CNAME</code>
       file in the repo + a DNS <code>CNAME</code> record pointing the subdomain to
       GitHub Pages.</li>
