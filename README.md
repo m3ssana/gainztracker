@@ -1,4 +1,4 @@
-# GAINZ Tracker
+# GAINZ Sherpa
 
 A backend-free PWA that points you at the nearest gym using your phone's
 geolocation and compass, with the distance in your preferred units. Gyms are

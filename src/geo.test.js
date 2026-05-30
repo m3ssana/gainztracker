@@ -1,4 +1,4 @@
-// Tests for the pure geo/math core of GAINZ Tracker.
+// Tests for the pure geo/math core of GAINZ Sherpa.
 // These functions have no browser dependencies, so we can test them in Node.
 import { test } from "node:test";
 import assert from "node:assert/strict";

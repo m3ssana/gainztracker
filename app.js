@@ -1,4 +1,4 @@
-// GAINZ Tracker — browser controller.
+// GAINZ Sherpa — browser controller.
 // All the heavy math lives in the pure, unit-tested ./src/geo.js so this file
 // only deals with the things that need a browser: sensors, the DOM, and storage.
 import { nearestGym, bearing, arrowRotation, formatDistance } from "./src/geo.js";

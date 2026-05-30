@@ -1,4 +1,4 @@
-// Pure geo/math core for GAINZ Tracker.
+// Pure geo/math core for GAINZ Sherpa.
 // No browser APIs here on purpose: keeping it pure means we can unit-test it in
 // Node and reuse the exact same code in the browser and in a Web Worker.
 

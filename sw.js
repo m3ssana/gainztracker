@@ -1,6 +1,6 @@
-// GAINZ Tracker service worker — offline-first app shell (SPEC §6).
+// GAINZ Sherpa service worker — offline-first app shell (SPEC §6).
 // Bump CACHE when you change any shipped file to roll the update out to clients.
-const CACHE = "gainz-v2";
+const CACHE = "gainz-v3";
 
 // Everything needed to launch the app with no network connection.
 const SHELL = [

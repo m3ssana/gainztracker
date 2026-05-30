@@ -1,4 +1,4 @@
-// One-off icon generator for GAINZ Tracker.
+// One-off icon generator for GAINZ Sherpa.
 // PWA install (manifest) and iOS "Add to Home Screen" require real raster PNGs.
 // Rather than pull in an image library, we draw a simple dumbbell on the dark
 // brand background straight into an RGBA buffer and PNG-encode it with the
