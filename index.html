@@ -23,20 +23,25 @@
   }
   *{box-sizing:border-box}
   html,body{height:100%}
-  /* Paint the root dark too: under viewport-fit=cover the bottom safe-area /
-     home-indicator region (e.g. iPhone 15) can reveal the default white page
-     background behind <body>. Filling <html> with the theme color — which the
-     body gradient already fades to at the bottom — removes that white bar (#28). */
+  /* Paint every layer the same dark color so no white peeks through anywhere —
+     the home-indicator region, overscroll bounce, or safe-area gaps on any
+     iPhone model. We set it on html, body, AND as the body's background-color
+     behind the gradient so there is literally nowhere for white to appear. */
   html{background:var(--bg)}
   body{
     margin:0;
     /* Respect the safe-area insets so nothing hides under the notch/home bar. */
     padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
     font:16px/1.5 -apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
-    background:radial-gradient(circle at 50% 0%,#1f1f26,#0d0d0f);color:var(--text);
+    background-color:var(--bg);
+    background-image:radial-gradient(circle at 50% 0%,#1f1f26,#0d0d0f);
+    color:var(--text);
     -webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;
     overflow:hidden;
   }
+  /* overscroll-behavior:none prevents the iOS rubber-band bounce that can
+     expose the white system background beneath the viewport. */
+  html,body{overscroll-behavior:none}
   #app{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:24px 20px}
 
   header{text-align:center}
